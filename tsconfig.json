@@ -1,0 +1,22 @@
+{
+  "typeRoots": ["./node_modules/@types", "./src/@types"],
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "outDir": "./build",
+    "noEmit": true,
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "skipLibCheck": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "useDefineForClassFields": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src", ".eslintrc.cjs"]
+}

@@ -1,0 +1,8 @@
+# ------------------------------------------
+# WARNING! REMOVE ANY COMMENTS ON PRODUCTION
+# ------------------------------------------
+# WARNING! Do not forget to either set `default` user password here
+# or to set it to `off`
+# ------------------------------------------
+user default off
+user admin on +@all ~* &* >password

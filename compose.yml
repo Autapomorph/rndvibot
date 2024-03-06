@@ -1,0 +1,81 @@
+version: '3.9'
+
+name: rndvibot
+
+services:
+  rndvibot:
+    image: rndvibot
+    build:
+      context: .
+      target: production
+    ports:
+      # Should match with .env BOT_SERVER_PORT
+      - 80:80
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - rndvibot
+
+  mongo-setup:
+    image: mongo:7
+    depends_on:
+      - mongo
+    restart: on-failure
+    entrypoint: ['/bin/bash', '/mongo-setup.sh']
+    environment:
+      # Set MONGO_RS_HOST to the name of mongo service
+      # and add `127.0.0.1 <mongo_service_name>`
+      # to /etc/hosts on host machine
+      # otherwise it fallbacks to localhost and will only work
+      # if api service is not running inside docker
+      - MONGO_RS_HOST=mongo
+    networks:
+      - rndvibot
+    volumes:
+      - ./scripts/mongo-setup.sh:/mongo-setup.sh
+      - ./scripts/mongo-init-replica-set.js:/mongo-init-replica-set.js
+
+  mongo:
+    image: mongo:7
+    ports:
+      - 27017:27017
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/mongo.replica.key.temp /data/mongo.replica.key
+        chmod 400 /data/mongo.replica.key
+        chown 999:999 /data/mongo.replica.key
+        exec docker-entrypoint.sh $$@
+    command: mongod --bind_ip_all --replSet rs0 --keyFile /data/mongo.replica.key
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - rndvibot
+    volumes:
+      - mongo:/data/db
+      - ./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+      - ./keys/mongo.replica.key:/data/mongo.replica.key.temp
+
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - 6379:6379
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - redis:/data/redis
+      - ./redis-stack.conf:/redis-stack.conf
+      - ./redis-stack.acl:/redis-stack.acl
+    networks:
+      - rndvibot
+
+volumes:
+  mongo:
+  redis:
+
+networks:
+  rndvibot:
